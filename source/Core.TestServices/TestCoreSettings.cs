@@ -22,12 +22,14 @@ namespace Thinktecture.IdentityServer.TestServices
         private string _siteName;
         private X509Certificate2 _certificate;
         private string _publicHostAddress;
+        private bool _multiTenant;
 
-        public TestCoreSettings(string issuerUri, string siteName, string publicHostAddress)
+        public TestCoreSettings(string issuerUri, string siteName, string publicHostAddress, bool multiTenant = false)
         {
             _issuerUri = issuerUri;
             _siteName = siteName;
             _publicHostAddress = publicHostAddress;
+            _multiTenant = multiTenant;
 
             var assembly = this.GetType().Assembly;
             using (var stream = assembly.GetManifestResourceStream("Thinktecture.IdentityServer.TestServices.idsrv3test.pfx"))
@@ -71,6 +73,11 @@ namespace Thinktecture.IdentityServer.TestServices
         public string GetPublicHost()
         {
             return _publicHostAddress;
+        }
+
+        public bool IsMultiTenant()
+        {
+            return _multiTenant;
         }
 
         public InternalProtectionSettings GetInternalProtectionSettings()

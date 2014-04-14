@@ -198,8 +198,12 @@ namespace UnitTests.Plumbing
             throw new NotImplementedException();
         }
 
+        public bool IsMultiTenant()
+        {
+            return false;
+        }
 
-       
+
         private static byte[] ReadStream(Stream input)
         {
             byte[] buffer = new byte[16 * 1024];

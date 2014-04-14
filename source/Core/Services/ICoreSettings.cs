@@ -21,6 +21,8 @@ namespace Thinktecture.IdentityServer.Core.Services
         string GetIssuerUri();
         string GetSiteName();
         string GetPublicHost();
+
+        bool IsMultiTenant();
         
     }
 }
