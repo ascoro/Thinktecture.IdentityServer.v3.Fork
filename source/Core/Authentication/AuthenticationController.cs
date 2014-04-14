@@ -168,8 +168,13 @@ namespace Thinktecture.IdentityServer.Core.Authentication
             ExternalAuthenticateResult authResult;
             if (settings.IsMultiTenant())
             {
-                //TODO : Call AuthenticateExternalAsync with tenant
-                throw new NotImplementedException("Authenticate with multitenancy is not implemented");
+                var multiTenantUserService = userService as IMultiTenantUserService;
+                if (multiTenantUserService == null)
+                {
+                    throw new NotImplementedException("The current instance of UserService doesn't support multitenancy");
+                }
+                var tenant = GetPropertyFromMessage(Constants.TokenRequest.Tenant);
+                authResult = await multiTenantUserService.AuthenticateExternalAsync(tenant, currentSubject, externalIdentity);
             }
             else
             {
