@@ -77,7 +77,17 @@ namespace Thinktecture.IdentityServer.Core.Authentication
                 return RenderLoginPage(ModelState.GetError(), model.Username);
             }
 
-            var authResult = await userService.AuthenticateLocalAsync(model.Username, model.Password);
+            AuthenticateResult authResult;
+            if (settings.IsMultiTenant())
+            {
+                //TODO : Call AuthenticateLocalAsync with tenant
+                throw new NotImplementedException("Authenticate with multitenancy is not implemented");
+            }
+            else
+            {
+                authResult = await userService.AuthenticateLocalAsync(model.Username, model.Password);
+            }
+
             if (authResult == null)
             {
                 logger.Verbose("[AuthenticationController.LoginLocal] authenticate returned null");
@@ -149,7 +159,17 @@ namespace Thinktecture.IdentityServer.Core.Authentication
                 return RenderLoginPage(Messages.NoMatchingExternalAccount);
             }
 
-            var authResult = await userService.AuthenticateExternalAsync(currentSubject, externalIdentity);
+            ExternalAuthenticateResult authResult;
+            if (settings.IsMultiTenant())
+            {
+                //TODO : Call AuthenticateExternalAsync with tenant
+                throw new NotImplementedException("Authenticate with multitenancy is not implemented");
+            }
+            else
+            {
+                authResult = await userService.AuthenticateExternalAsync(currentSubject, externalIdentity);
+            }
+
             if (authResult == null)
             {
                 logger.Verbose("[AuthenticationController.LoginExternalCallback] authenticate external returned null");
