@@ -12,6 +12,13 @@ using Thinktecture.IdentityServer.Core.Models;
 
 namespace Thinktecture.IdentityServer.Core.Services
 {
+    public interface IMultiTenantUserService
+    {
+        Task<AuthenticateResult> AuthenticateLocalAsync(string tenant, string username, string password);
+        Task<ExternalAuthenticateResult> AuthenticateExternalAsync(string tenant, string subject, ExternalIdentity externalUser);
+        Task<IEnumerable<Claim>> GetProfileDataAsync(string subject, IEnumerable<string> requestedClaimTypes = null);
+    }
+
     public interface IUserService
     {
         Task<AuthenticateResult> AuthenticateLocalAsync(string username, string password);
