@@ -21,6 +21,7 @@ namespace Thinktecture.IdentityServer.Core
             public const string Scope        = "scope";
             public const string ResponseType = "response_type";
             public const string ClientId     = "client_id";
+            public const string Tenant       = "tenant";
             public const string RedirectUri  = "redirect_uri";
             public const string State        = "state";
             public const string ResponseMode = "response_mode";
@@ -39,6 +40,7 @@ namespace Thinktecture.IdentityServer.Core
             public const string GrantType    = "grant_type";
             public const string RedirectUri  = "redirect_uri";
             public const string ClientId     = "client_id";
+            public const string Tenant       = "tenant";
             public const string ClientSecret = "client_secret";
             public const string Assertion    = "assertion";
             public const string Code         = "code";
@@ -283,6 +285,7 @@ namespace Thinktecture.IdentityServer.Core
 
             // more claims
             public const string ClientId         = "client_id";
+            public const string Tenant           = "tenant";
             public const string Scope            = "scope";
             public const string Id               = "id";
             public const string Secret           = "secret";
