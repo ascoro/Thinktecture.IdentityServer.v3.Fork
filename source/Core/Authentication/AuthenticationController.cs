@@ -322,6 +322,11 @@ namespace Thinktecture.IdentityServer.Core.Authentication
                 id.AddClaims(authResult.RedirectClaims);
             }
 
+            if (settings.IsMultiTenant())
+            {
+                id.AddClaims(new[] { new Claim("tenant", GetPropertyFromMessage(Constants.TokenRequest.Tenant)) });
+            }
+
             var ctx = Request.GetOwinContext();
             ctx.Authentication.SignOut(
                 Constants.PrimaryAuthenticationType,
