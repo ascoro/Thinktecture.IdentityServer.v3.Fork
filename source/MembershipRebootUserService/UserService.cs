@@ -18,7 +18,7 @@ using ClaimHelper = BrockAllen.MembershipReboot.ClaimsExtensions;
 
 namespace Thinktecture.IdentityServer.MembershipReboot
 {
-    public class UserService<TAccount> : IUserService, IDisposable
+    public class UserService<TAccount> : IMultiTenantUserService, IUserService, IDisposable
         where TAccount : UserAccount
     {
         protected readonly UserAccountService<TAccount> userAccountService;
@@ -38,6 +38,19 @@ namespace Thinktecture.IdentityServer.MembershipReboot
                 this.cleanup.Dispose();
                 this.cleanup = null;
             }
+        }
+
+        public async Task<AuthenticateResult> AuthenticateLocalAsync(string tenant, string username, string password)
+        {
+            TAccount account;
+            var isValidAccount = userAccountService.Authenticate(tenant, username, password, out account);
+
+            return GetAuthenticateResultFromAccount(account, isValidAccount);
+        }
+
+        public async Task<ExternalAuthenticateResult> AuthenticateExternalAsync(string tenant, string subject, ExternalIdentity externalUser)
+        {
+            throw new NotImplementedException();
         }
 
         public virtual async Task<IEnumerable<System.Security.Claims.Claim>> GetProfileDataAsync(string subject,
@@ -64,19 +77,19 @@ namespace Thinktecture.IdentityServer.MembershipReboot
                 new Claim(Constants.ClaimTypes.Name, GetDisplayNameForAccount(account.ID)),
                 new Claim(Constants.ClaimTypes.UpdatedAt, account.LastUpdated.ToEpochTime().ToString()),
             };
-            
+
             if (!String.IsNullOrWhiteSpace(account.Email))
             {
                 claims.Add(new Claim(Constants.ClaimTypes.Email, account.Email));
                 claims.Add(new Claim(Constants.ClaimTypes.EmailVerified, account.IsAccountVerified ? "true" : "false"));
             }
-            
+
             if (!String.IsNullOrWhiteSpace(account.MobilePhoneNumber))
             {
                 claims.Add(new Claim(Constants.ClaimTypes.PhoneNumber, account.MobilePhoneNumber));
                 claims.Add(new Claim(Constants.ClaimTypes.PhoneNumberVerified, !String.IsNullOrWhiteSpace(account.MobilePhoneNumber) ? "true" : "false"));
             }
-            
+
             claims.AddRange(account.Claims.Select(x => new Claim(x.Type, x.Value)));
             claims.AddRange(account.LinkedAccountClaims.Select(x => new Claim(x.Type, x.Value)));
 
@@ -93,11 +106,10 @@ namespace Thinktecture.IdentityServer.MembershipReboot
 
             return name;
         }
-        
-        public virtual async Task<AuthenticateResult> AuthenticateLocalAsync(string username, string password)
+
+        private AuthenticateResult GetAuthenticateResultFromAccount(TAccount account, bool isValidAccount)
         {
-            TAccount account;
-            if (userAccountService.Authenticate(username, password, out account))
+            if (isValidAccount)
             {
                 var subject = account.ID.ToString("D");
                 var name = GetDisplayNameForAccount(account.ID);
@@ -132,6 +144,14 @@ namespace Thinktecture.IdentityServer.MembershipReboot
             }
 
             return null;
+        }
+
+        public virtual async Task<AuthenticateResult> AuthenticateLocalAsync(string username, string password)
+        {
+            TAccount account;
+            var isValidAccount = userAccountService.Authenticate(username, password, out account);
+
+            return GetAuthenticateResultFromAccount(account, isValidAccount);
         }
 
         public virtual async Task<ExternalAuthenticateResult> AuthenticateExternalAsync(string subject, ExternalIdentity externalUser)
