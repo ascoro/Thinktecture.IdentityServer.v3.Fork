@@ -22,7 +22,7 @@ namespace Thinktecture.IdentityServer.Host
                         publicHostAddress: "http://localhost:3333/core",
                         isMultiTenant: false);
 
-                    //factory.UserService = Thinktecture.IdentityServer.MembershipReboot.UserServiceFactory.Factory;
+                    //factory.UserService = (() => Thinktecture.IdentityServer.MembershipReboot.UserServiceFactory.Factory(factory.CoreSettings().IsMultiTenant()));
                     //factory.UserService = Thinktecture.IdentityServer.AspNetIdentity.UserServiceFactory.Factory;
 
                     var options = new IdentityServerCoreOptions

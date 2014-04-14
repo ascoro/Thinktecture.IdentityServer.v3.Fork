@@ -11,8 +11,15 @@ namespace Thinktecture.IdentityServer.MembershipReboot
 {
     public class UserServiceFactory
     {
-        public static IUserService Factory()
+        public static IUserService Factory(bool isMultiTenant = false)
         {
+            if (isMultiTenant)
+            {
+                // Allow multitenancy
+                config.UsernamesUniqueAcrossTenants = false;
+                config.MultiTenant = true;
+            }
+
             var repo = new DefaultUserAccountRepository();
             var userAccountService = new UserAccountService(config, repo);
             var userSvc = new UserService<UserAccount>(userAccountService, repo);
