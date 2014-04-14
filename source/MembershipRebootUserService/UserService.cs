@@ -50,7 +50,27 @@ namespace Thinktecture.IdentityServer.MembershipReboot
 
         public async Task<ExternalAuthenticateResult> AuthenticateExternalAsync(string tenant, string subject, ExternalIdentity externalUser)
         {
-            throw new NotImplementedException();
+            if (externalUser == null)
+            {
+                throw new ArgumentNullException("externalUser");
+            }
+
+            try
+            {
+                var acct = this.userAccountService.GetByLinkedAccount(tenant, externalUser.Provider.Name, externalUser.ProviderId);
+                if (acct == null)
+                {
+                    return await ProcessNewExternalAccountAsync(externalUser.Provider.Name, externalUser.ProviderId, externalUser.Claims, tenant);
+                }
+                else
+                {
+                    return await ProcessExistingExternalAccountAsync(acct.ID, externalUser.Provider.Name, externalUser.ProviderId, externalUser.Claims);
+                }
+            }
+            catch (ValidationException ex)
+            {
+                return new ExternalAuthenticateResult(ex.Message);
+            }
         }
 
         public virtual async Task<IEnumerable<System.Security.Claims.Claim>> GetProfileDataAsync(string subject,
@@ -179,9 +199,18 @@ namespace Thinktecture.IdentityServer.MembershipReboot
             }
         }
 
-        protected virtual async Task<ExternalAuthenticateResult> ProcessNewExternalAccountAsync(string provider, string providerId, IEnumerable<Claim> claims)
+        protected virtual async Task<ExternalAuthenticateResult> ProcessNewExternalAccountAsync(string provider, string providerId, IEnumerable<Claim> claims, string tenant = null)
         {
-            var acct = userAccountService.CreateAccount(Guid.NewGuid().ToString("N"), null, null);
+            TAccount acct;
+            if (string.IsNullOrWhiteSpace(tenant))
+            {
+                acct = userAccountService.CreateAccount(Guid.NewGuid().ToString("N"), null, null);
+            }
+            else
+            {
+                acct = userAccountService.CreateAccount(tenant, Guid.NewGuid().ToString("N"), null, (string)null);
+            }
+
             userAccountService.AddOrUpdateLinkedAccount(acct, provider, providerId);
 
             var result = await AccountCreatedFromExternalProviderAsync(acct.ID, provider, providerId, claims);
