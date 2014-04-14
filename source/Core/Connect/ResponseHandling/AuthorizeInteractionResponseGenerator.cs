@@ -6,7 +6,9 @@
 using System;
 using System.Linq;
 using System.Security.Claims;
+using System.Security.Principal;
 using System.Threading.Tasks;
+using Thinktecture.IdentityModel.Extensions;
 using Thinktecture.IdentityServer.Core.Authentication;
 using Thinktecture.IdentityServer.Core.Connect.Models;
 using Thinktecture.IdentityServer.Core.Services;
@@ -17,15 +19,34 @@ namespace Thinktecture.IdentityServer.Core.Connect
     {
         private SignInMessage _signIn;
         private ICoreSettings _core;
-        
+
         private IConsentService _consent;
 
         public AuthorizeInteractionResponseGenerator(ICoreSettings core, IConsentService consent)
         {
             _signIn = new SignInMessage();
-            
+
             _core = core;
             _consent = consent;
+        }
+
+        private bool IsUserAuthenticated(ValidatedAuthorizeRequest request, ClaimsPrincipal user)
+        {
+            if (!user.Identity.IsAuthenticated)
+            {
+                return false;
+            }
+
+            if (_core.IsMultiTenant())
+            {
+                var tenantRequested = request.Raw.Get(Constants.AuthorizeRequest.Tenant);
+                var tenantUser = ((ClaimsIdentity)user.Identity).Claims.GetValue(Constants.ClaimTypes.Tenant);
+                if (string.IsNullOrWhiteSpace(tenantUser) || String.Compare(tenantRequested, tenantUser, StringComparison.OrdinalIgnoreCase) != 0)
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
         public InteractionResponse ProcessLogin(ValidatedAuthorizeRequest request, ClaimsPrincipal user)
@@ -43,7 +64,7 @@ namespace Thinktecture.IdentityServer.Core.Connect
             }
 
             // unauthenticated user
-            if (!user.Identity.IsAuthenticated)
+            if (!IsUserAuthenticated(request, user))
             {
                 // prompt=none means user must be signed in already
                 if (request.PromptMode == Constants.PromptModes.None)
@@ -94,7 +115,7 @@ namespace Thinktecture.IdentityServer.Core.Connect
                     };
                 }
             }
-    
+
             return new InteractionResponse();
         }
 
@@ -121,11 +142,12 @@ namespace Thinktecture.IdentityServer.Core.Connect
                         // no need to show consent screen again
                         // build access denied error to return to client
                         response.IsError = true;
-                        response.Error = new AuthorizeError { 
+                        response.Error = new AuthorizeError
+                        {
                             ErrorType = ErrorTypes.Client,
                             Error = Constants.AuthorizeErrors.AccessDenied,
                             ResponseMode = request.ResponseMode,
-                            ErrorUri = request.RedirectUri, 
+                            ErrorUri = request.RedirectUri,
                             State = request.State
                         };
                     }
@@ -141,7 +163,7 @@ namespace Thinktecture.IdentityServer.Core.Connect
                             response.IsConsent = true;
                             response.ConsentError = "Must select at least one permission.";
                         }
-                        
+
                         if (request.Client.AllowRememberConsent)
                         {
                             // remember consent
@@ -151,12 +173,12 @@ namespace Thinktecture.IdentityServer.Core.Connect
                                 // remember what user actually selected
                                 scopes = request.ValidatedScopes.GrantedScopes.Select(x => x.Name);
                             }
-                            
+
                             await _consent.UpdateConsentAsync(request.Client, request.Subject, scopes);
                         }
                     }
                 }
-                
+
                 return response;
             }
 
