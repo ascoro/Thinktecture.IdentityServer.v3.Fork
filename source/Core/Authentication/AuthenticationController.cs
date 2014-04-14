@@ -324,7 +324,7 @@ namespace Thinktecture.IdentityServer.Core.Authentication
 
             if (settings.IsMultiTenant())
             {
-                id.AddClaims(new[] { new Claim("tenant", GetPropertyFromMessage(Constants.TokenRequest.Tenant)) });
+                id.AddClaims(new[] { new Claim(Constants.ClaimTypes.Tenant, GetPropertyFromMessage(Constants.TokenRequest.Tenant)) });
             }
 
             var ctx = Request.GetOwinContext();
