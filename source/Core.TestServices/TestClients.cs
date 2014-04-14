@@ -77,6 +77,9 @@ namespace Thinktecture.IdentityServer.TestServices
                         
                         // JavaScript client
                         new Uri("http://localhost:21575/index.html"),
+                        
+                        // JavaScript multitenant client
+                        new Uri("http://localhost:26560/index.html"),
 
                         // MVC form post sample
                         new Uri("http://localhost:11716/account/signInCallback"),
