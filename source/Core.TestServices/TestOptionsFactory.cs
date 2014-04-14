@@ -10,9 +10,9 @@ namespace Thinktecture.IdentityServer.TestServices
 {
     public class TestOptionsFactory
     {
-        public static IdentityServerServiceFactory Create(string issuerUri, string siteName, string publicHostAddress = "")
+        public static IdentityServerServiceFactory Create(string issuerUri, string siteName, string publicHostAddress = "", bool isMultiTenant = false)
         {
-            var settings = new TestCoreSettings(issuerUri, siteName, publicHostAddress);
+            var settings = new TestCoreSettings(issuerUri, siteName, publicHostAddress, isMultiTenant);
             var codeStore = new TestAuthorizationCodeStore();
             var tokenStore = new TestTokenHandleStore();
             var consent = new TestConsentService();
