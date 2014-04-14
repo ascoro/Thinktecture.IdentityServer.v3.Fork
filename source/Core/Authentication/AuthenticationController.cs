@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Http;
 using Thinktecture.IdentityModel.Extensions;
 using Thinktecture.IdentityServer.Core.Assets;
@@ -442,6 +443,15 @@ namespace Thinktecture.IdentityServer.Core.Authentication
                 protection.Issuer,
                 protection.Audience,
                 protection.SigningKey);
+        }
+
+        private string GetPropertyFromMessage(string property)
+        {
+            logger.Verbose("[AuthenticationController.GetPropertyFromMessage] called");
+
+            var returnUrl = LoadLoginRequestMessage().ReturnUrl;
+            var values = HttpUtility.ParseQueryString(returnUrl);
+            return values.Get(property);
         }
     }
 }
